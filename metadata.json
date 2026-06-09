@@ -1,0 +1,6 @@
+{
+  "name": "إدارة الصرف اليومي للأفراد",
+  "description": "تطبيق إدارة عمليات الصرف اليومي للأفراد والمجندين مع منع الصرف المزدوج ودعم المزامنة الفورية وتصدير التقارير.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

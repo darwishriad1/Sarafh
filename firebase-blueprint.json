@@ -1,0 +1,171 @@
+{
+  "entities": {
+    "cashier": {
+      "title": "Cashier",
+      "description": "An authenticated or localized cashier agent responsible for payout distribution in the field",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the cashier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Full Arabic name of the cashier"
+        },
+        "username": {
+          "type": "string",
+          "description": "Cashier login credential username"
+        },
+        "pinCode": {
+          "type": "string",
+          "description": "4-digit or 6-digit passcode for field authentication"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Whether this cashier is currently authorized to disburse funds"
+        },
+        "payoutPoint": {
+          "type": "string",
+          "description": "Specific geographic or tactical site assignment (e.g. مقر الرويس)"
+        }
+      },
+      "required": ["id", "name", "username", "pinCode", "isActive"]
+    },
+    "individual": {
+      "title": "Individual",
+      "description": "Recipient details and military payout criteria",
+      "type": "object",
+      "properties": {
+        "militaryId": {
+          "type": "string",
+          "description": "Unique military identifier (الرقم العسكري) of the individual, serving as Firestore Document ID"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full Arabic name of the military officer/individual"
+        },
+        "unit": {
+          "type": "string",
+          "description": "Military regiment or division name"
+        },
+        "entitledAmount": {
+          "type": "number",
+          "description": "Assigned disbursement amount in SAR or local currency"
+        },
+        "payoutStatus": {
+          "type": "string",
+          "enum": ["pending", "received"],
+          "description": "The distribution state of individual's benefits"
+        },
+        "lastReceivedDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of the most recent payout"
+        },
+        "assignedCashierId": {
+          "type": "string",
+          "description": "Cashier ID assigned to this individual in case of dedicated payout mode. If empty, any cashier can pay."
+        },
+        "receivedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when payouts were obtained"
+        },
+        "receivedCashierId": {
+          "type": "string",
+          "description": "Cashier who performed the payout delivery"
+        },
+        "receivedCashierName": {
+          "type": "string",
+          "description": "Name of the cashier who performed the payout"
+        },
+        "receivedLocation": {
+          "type": "string",
+          "description": "GPS geographical latitude and longitude values of disbursement"
+        },
+        "receivedDevice": {
+          "type": "string",
+          "description": "Device platform string and browser agent data used"
+        }
+      },
+      "required": ["militaryId", "fullName", "unit", "entitledAmount", "payoutStatus"]
+    },
+    "operationLog": {
+      "title": "Operation Log",
+      "description": "System transaction log for auditing, modification, backups, payouts and edits",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Operation ID"
+        },
+        "individualId": {
+          "type": "string",
+          "description": "Foreign key to the military individual"
+        },
+        "individualName": {
+          "type": "string",
+          "description": "Arabic full name of the military individual"
+        },
+        "individualMilitaryId": {
+          "type": "string",
+          "description": "Arabic military ID"
+        },
+        "cashierId": {
+          "type": "string",
+          "description": "Cashier ID responsible for the action"
+        },
+        "cashierName": {
+          "type": "string",
+          "description": "Arabic cashier name"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount distributed or modified"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Operation timestamp"
+        },
+        "location": {
+          "type": "string",
+          "description": "GPS coordinates at the moment of registration"
+        },
+        "device": {
+          "type": "string",
+          "description": "Device signature log"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["payout", "cancel", "edit", "backup_restore"],
+          "description": "The transaction classification"
+        },
+        "performedBy": {
+          "type": "string",
+          "description": "Role performing the operations, either cashier or admin"
+        },
+        "details": {
+          "type": "string",
+          "description": "Arabic textual explanation of operational alterations"
+        }
+      },
+      "required": ["id", "individualId", "timestamp", "type", "performedBy"]
+    }
+  },
+  "firestore": {
+    "/cashiers/{cashierId}": {
+      "schema": "cashier",
+      "description": "Collection of certified regional cashiers"
+    },
+    "/individuals/{militaryId}": {
+      "schema": "individual",
+      "description": "Collection of military individuals eligible for disbursement"
+    },
+    "/operations/{operationId}": {
+      "schema": "operationLog",
+      "description": "Audit trails for monitoring and reconciling double attempts or overrides"
+    }
+  }
+}

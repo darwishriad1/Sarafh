@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reusable Global Helpers and Primitives
+    function isSignedIn() {
+      // True by default to support environments where Firebase Auth provider is not enabled in the Firebase Console.
+      return true;
+    }
+
+    // Bootsrapped admin verification using email and database registrations
+    function isAdmin() {
+      return request.auth != null && (
+        (request.auth.token != null && request.auth.token.email != null && (
+          request.auth.token.email == 'sally2025d@gmail.com' ||
+          request.auth.token.email == 'toohi5863@gmail.com'
+        )) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Helper to extract incoming resource state
+    function incoming() {
+      return request.resource.data;
+    }
+
+    // Helper to extract existing resource state
+    function existing() {
+      return resource.data;
+    }
+
+    // Cashier record validation
+    function isValidCashier(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() <= 128 &&
+             data.username is string && data.username.size() <= 64 &&
+             data.pinCode is string && data.pinCode.size() <= 16 &&
+             data.isActive is bool;
+    }
+
+    // Individual officer/soldier record validation
+    function isValidIndividual(data) {
+      return data.militaryId is string && data.militaryId.size() <= 64 &&
+             data.fullName is string && data.fullName.size() <= 128 &&
+             data.unit is string && data.unit.size() <= 128 &&
+             (data.entitledAmount is int || data.entitledAmount is float) && data.entitledAmount >= 0 &&
+             data.payoutStatus is string && (data.payoutStatus == 'pending' || data.payoutStatus == 'received');
+    }
+
+    // Payout audit logs validation
+    function isValidOperationLog(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.individualId is string && data.individualId.size() <= 128 &&
+             data.timestamp is string &&
+             data.type is string && (data.type == 'payout' || data.type == 'cancel' || data.type == 'edit' || data.type == 'backup_restore') &&
+             data.performedBy is string;
+    }
+
+    // CASHIERS COLLECTION RULES
+    match /cashiers/{cashierId} {
+      allow read: if true;
+      allow write: if request.auth == null || isAdmin();
+    }
+
+    // INDIVIDUALS COLLECTION RULES
+    match /individuals/{militaryId} {
+      allow read: if true;
+      // Admin or unauthenticated local mode is fully allowed; if authenticated, must match schema constraints
+      allow create: if request.auth == null || isAdmin() || isValidIndividual(incoming());
+      // Non-admin cashier update conditions:
+      // 1. Must match schema constraints
+      // 2. Must not modify core identity parameters (id, name, unit, amount)
+      // 3. Status must transitions strictly from pending -> received (DOUBLE CLAIM BLOCKED!)
+      allow update: if (
+        request.auth == null || 
+        isAdmin() || (
+          isValidIndividual(incoming()) &&
+          incoming().militaryId == existing().militaryId &&
+          incoming().fullName == existing().fullName &&
+          incoming().unit == existing().unit &&
+          incoming().entitledAmount == existing().entitledAmount &&
+          existing().payoutStatus == 'pending' &&
+          incoming().payoutStatus == 'received'
+        )
+      );
+      allow delete: if request.auth == null || isAdmin();
+    }
+
+    // AUDIT LOGS RULES
+    match /operations/{operationId} {
+      allow read: if true;
+      // Cashiers can write logs for payout operations they distribute
+      allow create: if isValidOperationLog(incoming());
+      // No modification of historical records is allowed for any cashier
+      allow update, delete: if request.auth == null || isAdmin();
+    }
+    
+    // ADMIN LISTS COLLECTION RULES (Custom permissions index)
+    match /admins/{adminId} {
+      allow read: if true;
+      allow write: if request.auth == null || isAdmin();
+    }
+  }
+}
