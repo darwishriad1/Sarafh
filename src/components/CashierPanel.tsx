@@ -477,86 +477,9 @@ export default function CashierPanel({
         </AnimatePresence>
       </div>
 
-      {/* 🏛️ PERSISTENT SHIELD BRAND TOP BAR (الشريط العلوي) */}
-      <div className={`${isFullScreen ? 'hidden' : 'flex'} bg-gradient-to-l from-slate-900 to-slate-800 text-slate-100 p-4 rounded-3xl shadow-xl flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-950/40 sticky top-1 z-20 print:hidden`}>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center text-white font-black text-lg shadow-md">
-            ص
-          </div>
-          <div className="text-right">
-            <h2 className="text-sm font-black tracking-tight flex items-center gap-1.5 justify-start">
-              <span>بروتوكول الصرف المالي الموحد</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            </h2>
-            <p className="text-[10px] text-slate-400 font-bold">لجنة صرف السلف والمرتبات العسكرية للمجندين</p>
-          </div>
-        </div>
 
-        {/* Cashier user badge inside top bar */}
-        <div className="flex items-center gap-3.5 self-end md:self-auto bg-slate-950/20 px-3.5 py-1.5 rounded-2xl border border-slate-800">
-          <div className="text-right">
-            <span className="text-4xs text-slate-400 font-bold block mb-0.5">الصراف المسؤول المعمد:</span>
-            <span className="text-3xs font-black text-slate-100 block">{cashier.name}</span>
-          </div>
-          {/* Account Profile image as requested (صورة الحساب) */}
-          <div className="w-9 h-9 rounded-full bg-slate-800 border-2 border-emerald-500 overflow-hidden flex items-center justify-center relative shadow-sm shrink-0">
-            {cashier.username === 'fahad' ? (
-              <span className="text-3xs font-black text-emerald-400 bg-slate-800 w-full h-full flex items-center justify-center uppercase">فـهـد</span>
-            ) : (
-              <span className="text-3xs font-black text-teal-400 bg-slate-800 w-full h-full flex items-center justify-center uppercase">صـالـح</span>
-            )}
-          </div>
-        </div>
-      </div>
 
-      {/* 🖥️ REAL-TIME IMMERSIVE FLOATING FULLSCREEN HEADER FOR CASHIER */}
-      {isFullScreen && (
-        <div className="bg-slate-900 border border-slate-800 text-white p-3 rounded-2xl shadow-xl flex items-center justify-between gap-4 sticky top-1 z-30 print:hidden animate-in fade-in duration-200">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center text-white font-black text-xs">
-              ص
-            </div>
-            <div className="text-right">
-              <h2 className="text-3xs font-black flex items-center gap-1.5 leading-none">
-                <span>نمط ملء الشاشة الميداني ⛶</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              </h2>
-              <p className="text-[9px] text-slate-400 font-bold mt-1 leading-none">
-                نشط في: {
-                  activeTab === 'home' ? 'الرئيسية والمؤشرات' :
-                  activeTab === 'search' ? 'البحث ومعالجة الصرف' :
-                  activeTab === 'recipients' ? 'دليل المستلمين الكلي' :
-                  activeTab === 'reports' ? 'التقارير الميدانية' :
-                  'التهيئة والخيارات'
-                }
-              </p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                if (!document.fullscreenElement) {
-                  document.documentElement.requestFullscreen().catch(() => {});
-                } else {
-                  document.exitFullscreen();
-                }
-              }}
-              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-350 hover:text-white rounded-lg text-4xs font-black transition cursor-pointer border border-slate-700"
-            >
-              ملء الشاشة الكلي ⛶
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsFullScreen(false)}
-              className="px-3 py-1.5 bg-rose-950/40 text-rose-400 border border-rose-900/30 rounded-lg text-4xs font-black hover:bg-rose-900/30 transition cursor-pointer"
-            >
-              إلغاء ملء الشاشة ✕
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* 📲 CONSOLIDATED CLIENT TABS INTERFACE CHASSIS */}
       <div className={`min-h-[60vh] pb-16 ${isFullScreen ? 'pt-2 px-1' : ''}`}>
@@ -565,32 +488,12 @@ export default function CashierPanel({
         {activeTab === 'home' && (
           <div className="space-y-6">
             
-            {/* 🇸🇦 WELCOME DASHBOARD BRIEFING & LIVE CLOCK (بطاقة ترحيبية وساعة حية للميدان) */}
-            <div className="bg-gradient-to-r from-emerald-800 via-slate-900 to-slate-950 text-white rounded-3xl p-6 shadow-md border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-6 overflow-hidden relative">
-              {/* Highlight background lights */}
-              <div className="absolute -left-16 -top-16 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-              <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
-
-              <div className="space-y-2 relative z-10 text-right">
-                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-black px-3 py-1 rounded-full border border-emerald-500/30 inline-flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                  لوحة المؤشرات والوصول السريع
-                </span>
-                <h1 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-2 justify-start">
-                  أهلاً بك، الصرّاف الميداني <span className="text-emerald-400 font-extrabold">{cashier.name}</span> 👋
-                </h1>
-                <p className="text-3xs text-slate-350 font-medium">
-                  نظام الصرف النقدي الذكي مجهز بالكامل للتشغيل دون انترنت والتوثيق الثنائي بالبصمة لتسريع الدفعة الحالية.
-                </p>
-              </div>
-
-              {/* Live localized ticking Saudi clock desk */}
-              <div className="flex flex-col items-center md:items-end justify-center bg-white/5 backdrop-blur-xs border border-white/10 px-5 py-4 rounded-2xl shrink-0 min-w-[200px] relative z-10">
-                <div className="flex items-center gap-2 text-white">
-                  <Clock className="w-5 h-5 text-emerald-400" />
-                  <span className="text-base font-mono font-black tracking-wider">{liveTime || '--:--:-- --'}</span>
-                </div>
-                <span className="text-[10px] text-slate-300 font-bold mt-1">{liveDate || 'جاري تحميل الوقت...'}</span>
+            {/* 🇸🇦 LIVE CLOCK (ساعة حية للميدان مبسطة) */}
+            <div className="bg-white border border-slate-200 p-4.5 rounded-3xl flex items-center justify-between shadow-3xs">
+              <span className="text-3xs text-slate-450 font-black">{liveDate || 'جاري تحميل الوقت...'}</span>
+              <div className="flex items-center gap-2 text-slate-850">
+                <Clock className="w-4.5 h-4.5 text-emerald-600" />
+                <span className="text-sm font-mono font-black tracking-wider">{liveTime || '--:--:-- --'}</span>
               </div>
             </div>
 
@@ -1303,7 +1206,7 @@ export default function CashierPanel({
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-right">
-                    <thead className="bg-slate-100 text-slate-505 text-xs">
+                    <thead className="bg-slate-100 text-slate-500 text-xs">
                       <tr>
                         <th className="px-4 py-2 font-black text-3xs">الرقم العسكري</th>
                         <th className="px-4 py-2 font-black text-3xs">الاسم الكامل</th>
@@ -1378,52 +1281,10 @@ export default function CashierPanel({
           </div>
         )}
 
-        {/* TAB 5: ⚙️ الإعدادات وخزينة الصراف (Settings, Calculator, and SOP View) */}
+        {/* TAB 5: ⚙️ الإعدادات وخزينة الصراف (Settings) */}
         {activeTab === 'settings' && (
           <div className="space-y-6">
             
-            {/* Standard operating instructions (لوائح الصرف الميداني) */}
-            <div className="bg-white border border-slate-200 p-5 rounded-3xl shadow-sm space-y-4">
-              <div className="border-b pb-2 text-right">
-                <h3 className="text-xs font-black text-slate-850">مستودع المادة القانونية وأنظمة الصرف المالي</h3>
-              </div>
-
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="ابحث في فصول وقاموس التعليمات المعتمدة..."
-                  value={sopSearch}
-                  onChange={(e) => setSopSearch(e.target.value)}
-                  className="w-full text-right py-2 pl-3 pr-8 bg-slate-50 border border-slate-250 focus:bg-white rounded-xl text-3xs font-semibold focus:outline-none"
-                />
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2" />
-              </div>
-
-              <div className="space-y-2">
-                {[
-                  { id: '1', title: '🆔 مراجعة وقيد البطاقات الشخصية والهوية المطبوعة', content: 'يتوجب على صرّافي اللجان فحص الصورة وبصمة الوجه المطبوعة للبطاقة العسكرية لمطابقة الماثلين مع الصورة منعة ومكافحة الانتحال التعبوي.' },
-                  { id: '2', title: '💼 ضوابط التعامل بالوكالات والنيابات الشرعية', content: 'يُمنع منعًا كلياً الصرف لغير صاحب العلاقة المطبوعة، إلا بإبراز توكيل رسمي شرعي ممهور بختم الوزارة أو قائد اللواء العسكري التابع.' },
-                  { id: '3', title: '📴 قواعد التشغيل أوفلاين لمنع تكرار الإيداعات', content: 'عند غياب الإشارة، يستخدم النظام ذاكرة التخزين المؤقت المحلية لتوليد الباركودات والسندات، ويعاد تسويتها اوتوماتيكيا لمنع تدوير الدفوع المزدوجة.' },
-                ]
-                .filter(s => s.title.includes(sopSearch) || s.content.includes(sopSearch))
-                .map(sop => (
-                  <div key={sop.id} className="border border-slate-100 rounded-xl p-2.5 text-right bg-slate-50/60">
-                    <button
-                      type="button"
-                      onClick={() => setExpandedSopId(expandedSopId === sop.id ? null : sop.id)}
-                      className="w-full flex items-center justify-between text-3xs font-black text-slate-850"
-                    >
-                      <span>{expandedSopId === sop.id ? '▲' : '▼'}</span>
-                      <span>{sop.title}</span>
-                    </button>
-                    {expandedSopId === sop.id && (
-                      <p className="text-4xs text-slate-600 leading-relaxed font-semibold mt-2 pt-2 border-t">{sop.content}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Logout and Credentials block */}
             <div className="bg-slate-900 text-slate-100 p-5 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="text-right">

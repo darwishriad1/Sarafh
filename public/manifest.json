@@ -1,0 +1,25 @@
+{
+  "name": "إدارة الصرف الميداني المعتمد",
+  "short_name": "بوابة الصرف",
+  "description": "منظومة الصرف النقدي والتحقق الثنائي بالبصمة للمستفيدين والأفراد عسكرياً وميدانياً",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "categories": ["finance", "utilities"],
+  "icons": [
+    {
+      "src": "/assets/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

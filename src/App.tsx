@@ -26,9 +26,23 @@ import CashierPanel from './components/CashierPanel';
 import ReportView from './components/ReportView';
 
 // Nav icons
-import { Shield, UserCheck, BarChart3, Wifi, WifiOff, RefreshCw, AlertTriangle, Disc, LogOut } from 'lucide-react';
+import { 
+  Shield, UserCheck, BarChart3, Wifi, WifiOff, RefreshCw, AlertTriangle, Disc, LogOut,
+  Smartphone, Laptop, Battery, BatteryCharging, Signal, Download, ChevronLeft, Home, Info
+} from 'lucide-react';
 
 export default function App() {
+  // PWA & Android Emulation States
+  const [isAndroidFrame, setIsAndroidFrame] = useState<boolean>(() => {
+    // Default to true on desktop screens to provide immediate Android visualization, false on real mobiles where screen is small
+    if (typeof window !== 'undefined') {
+      return window.innerWidth > 768;
+    }
+    return true;
+  });
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState<boolean>(true);
+
   // App-wide views
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
   const [activeRole, setActiveRole] = useState<'admin' | 'cashier' | null>(() => {
@@ -137,6 +151,30 @@ export default function App() {
       }
     }
   }, []);
+
+  // Listen for the native Android PWA install prompt
+  useEffect(() => {
+    const handleBeforeInstall = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const handlePWAInstall = async () => {
+    if (!deferredPrompt) {
+      // If prompt isn't fired yet (e.g. already installed or desktop browser), show an elegant clear guide
+      alert("خطوات التثبيت على أندرويد (Android):\n\n1. من متصفح Google Chrome المكتبي أو المحمول، اضغط على زر الخيارات (الثلاث نقاط ┇).\n2. انقر على خيار 'تثبيت التطبيق' (Install App) أو 'الإضافة إلى الشاشة الرئيسية' (Add to Home Screen).\n3. سيظهر لك التطبيق كأحد تطبيقات أندرويد الرسمية على جهازك وبأداء سريع جداً ويعمل بالكامل أوفلاين!");
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to install prompt: ${outcome}`);
+    setDeferredPrompt(null);
+    setShowInstallBanner(false);
+  };
 
   // REALTIME SYNC LISTENERS (only triggered when simulated online is true)
   useEffect(() => {
@@ -685,9 +723,31 @@ export default function App() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased direction-rtl" dir="rtl">
+  // Clock simulation for Android Status Bar
+  const [androidTime, setAndroidTime] = useState<string>('١٢:٠٠ م');
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = now.getMinutes();
+      const ampm = hours >= 12 ? 'م' : 'ص';
+      hours = hours % 12;
+      hours = hours ? hours : 12; 
+      const strMinutes = minutes < 10 ? '0' + minutes : minutes;
       
+      const arabicHours = String(hours).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[parseInt(d)]);
+      const arabicMinutes = String(strMinutes).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[parseInt(d)]);
+      
+      setAndroidTime(`${arabicHours}:${arabicMinutes} ${ampm}`);
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Standard Render block with Android Wrapper integration
+  const renderAppContent = () => (
+    <>
       {/* Visual Navigation Bar */}
       <header className="bg-white border-b border-slate-200/80 shadow-sm sticky top-0 z-30 print:hidden px-4 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -695,8 +755,12 @@ export default function App() {
             ص
           </div>
           <div className="text-right">
-            <h1 className="text-sm font-black text-slate-800 leading-none">إدارة الصرف اليومي للأفراد</h1>
-            <span className="text-4xs text-slate-450 leading-none block mt-1 font-mono">النسخة الميدانية الرقمية 2.1</span>
+            <h1 className="text-sm font-black text-slate-800 leading-none">
+              {activeRole === 'admin' ? 'المشرف المالي العام' : (activeCashier?.name || 'الصراف الميداني')}
+            </h1>
+            <span className="text-4xs text-slate-450 leading-none block mt-1 font-sans font-extrabold">
+              {activeRole === 'admin' ? currentUser?.email : 'باسم الصراف المفوض'}
+            </span>
           </div>
         </div>
 
@@ -714,23 +778,23 @@ export default function App() {
                 <button
                   id="view-dashboard-btn"
                   type="button"
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-3xs font-black transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-3xs font-black transition-all cursor-pointer ${
                     viewState === 'dashboard' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-500 hover:text-slate-850'
                   }`}
                   onClick={() => setViewState('dashboard')}
                 >
-                  لوحة الحركة والمديرين
+                  الرئيسية
                 </button>
                 <button
                   id="view-reports-btn"
                   type="button"
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-3xs font-black transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-3xs font-black transition-all cursor-pointer ${
                     viewState === 'reports' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-500 hover:text-slate-850'
                   }`}
                   onClick={() => setViewState('reports')}
                 >
                   <BarChart3 className="w-3.5 h-3.5" />
-                  مركز التقارير والكشوفات
+                  التقرير
                 </button>
               </div>
 
@@ -742,7 +806,7 @@ export default function App() {
                 className="flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100/80 border border-rose-200/65 text-rose-700 hover:text-rose-800 text-3xs font-black rounded-xl transition duration-150 shadow-sm cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>تسجيل الخروج</span>
+                <span>خروج</span>
               </button>
             </div>
           )}
@@ -750,7 +814,7 @@ export default function App() {
       </header>
 
       {/* Main Container Wrapper */}
-      <main className="max-w-7xl mx-auto px-4 py-6 sm:py-8 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 py-5 sm:py-7 space-y-6">
 
         {authWarning && (
           <motion.div
@@ -764,7 +828,7 @@ export default function App() {
               <div>
                 <span className="text-amber-950 font-black text-[13px] block mb-1">تنبيه هام حول مزامنة قنوات التوثيق (Anonymous Auth):</span>
                 <span className="font-semibold text-amber-800">{authWarning}</span>
-                <div className="mt-2 text-[10px] text-amber-700 space-y-1 font-medium bg-amber-100/30 p-2.5 sm:p-3 rounded-xl border border-amber-200/40 italic">
+                <div className="mt-2 text-[10px] text-amber-750 space-y-1 font-medium bg-amber-100/30 p-2.5 sm:p-3 rounded-xl border border-amber-200/40 italic">
                   <p>💡 لتشغيل المزامنة الحية بقاعدة البيانات للتحديث الفوري لعمليات الصرف لمكافأة الأفراد، يرجى تفعيل الدخول المجهول باتباع الخطوات البسيطة التالية:</p>
                   <p>1️⃣ اذهب إلى وحدة تحكم فايربيز <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="underline text-emerald-800 font-extrabold hover:text-emerald-950">Firebase Console</a> ثم اختر هذا المشروع.</p>
                   <p>2️⃣ من القائمة الجانبية اختر <strong>Build</strong> ثم اضغط على <strong>Authentication</strong>.</p>
@@ -797,9 +861,9 @@ export default function App() {
         )}
 
         {/* Core State Rendering Engine */}
-        <div className="min-h-[70vh]">
+        <div className="min-h-[60vh]">
           {isAppLoading ? (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+            <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
               <Disc className="w-10 h-10 animate-spin text-emerald-600" />
               <p className="text-xs text-slate-500 font-bold">بانتظار مصادقة والتحقق من صلاحية الجلسة المفتوحة...</p>
             </div>
@@ -857,8 +921,14 @@ export default function App() {
       {/* Aesthetic Footer - Hidden on Print */}
       <footer className="bg-white border-t border-slate-200 py-6 mt-12 text-center text-3xs text-slate-400 print:hidden">
         <p>نظام الصرف الميداني للأفراد والمجندين المعتمد في المنصة الشاملة</p>
-        <p className="mt-1 font-mono text-4xs text-slate-350">الجمهورية والفرقة العسكرية المالية - محمي بحسب معايير التوزيع المزدوج ABAC</p>
+        <p className="mt-1 font-mono text-4xs text-slate-3505">محمي ومرمز طبقاً لمتطلبات الصرف المالي وعمليات الحصانة الأمنية للميدان</p>
       </footer>
+    </>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased direction-rtl" dir="rtl">
+      {renderAppContent()}
     </div>
   );
 }
